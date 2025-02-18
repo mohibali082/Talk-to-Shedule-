@@ -7,15 +7,15 @@ Original file is located at
     https://colab.research.google.com/drive/11dKs_cp6_mHRk4AIgPK0TJOP8YdMbtkE
 """
 
-!pip install dateparser
+pip install dateparser
 
 pip install openai-whisper
 
-!pip install openai-whisper
-!sudo apt update && sudo apt install ffmpeg
+pip install openai-whisper
+sudo apt update && sudo apt install ffmpeg
 
-!pip install googletrans==4.0.0-rc1
-!pip install langdetect
+pip install googletrans==4.0.0-rc1
+pip install langdetect
 
 import whisper
 
