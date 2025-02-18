@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/11dKs_cp6_mHRk4AIgPK0TJOP8YdMbtkE
 """
 
-
+import whisper
 # Load the Whisper model
 model = whisper.load_model("base")
 print("Model loaded successfully!")
