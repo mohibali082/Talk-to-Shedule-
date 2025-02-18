@@ -7,17 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/11dKs_cp6_mHRk4AIgPK0TJOP8YdMbtkE
 """
 
-pip install dateparser
-
-pip install openai-whisper
-
-pip install openai-whisper
-sudo apt update && sudo apt install ffmpeg
-
-pip install googletrans==4.0.0-rc1
-pip install langdetect
-
-import whisper
 
 # Load the Whisper model
 model = whisper.load_model("base")
@@ -73,9 +62,6 @@ def translate_to_english(text):
 print("Translated Urdu Text:", translate_to_english(result["text"]))
 print("Translated Punjabi Text:", translate_to_english(result["text"]))
 print("Translated English Text:", translate_to_english(result["text"]))
-
-!pip uninstall -y dateparser
-!pip install --upgrade dateparser
 
 import spacy
 import dateparser
