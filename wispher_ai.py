@@ -1,90 +1,75 @@
+import streamlit as st
 import whisper
-
-# Load the Whisper model
-model = whisper.load_model("base")
-print("Model loaded successfully!")
-
-# Transcribe an audio file using raw string notation
-result = model.transcribe(r"WhatsApp Audio 2025-02-14 at 16.42.31_8f156670.waptt.mp3")
-print("Transcription:", result["text"])
+import torch
+import spacy
+import subprocess
 from googletrans import Translator
+from dateparser.search import search_dates
 
-def translate_to_english(text):
-    translator = Translator()
+# Ensure spaCy language model is installed
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"])
+    nlp = spacy.load("en_core_web_sm")
 
-    # Detect the language of the text
-    detected_lang = translator.detect(text).lang
+# Load Whisper Model
+@st.cache_resource
+def load_model():
+    return whisper.load_model("base")
 
-    # Translate to English if the text is in Urdu or Punjabi
-    if detected_lang in ["ur", "pa"]:  # "ur" for Urdu, "pa" for Punjabi
-        translation = translator.translate(text, src=detected_lang, dest="en")
-        return translation.text
-    else:
-        # If the text is already in English or another supported language, return as is
+model = load_model()
+st.success("🎙️ Whisper Model Loaded Successfully!")
+
+# Upload Audio File
+uploaded_file = st.file_uploader("Upload an audio file", type=["mp3", "wav", "m4a"])
+
+if uploaded_file is not None:
+    # Save file temporarily
+    audio_path = "temp_audio.mp3"
+    with open(audio_path, "wb") as f:
+        f.write(uploaded_file.read())
+
+    # Transcribe Audio
+    st.info("Transcribing audio...")
+    result = model.transcribe(audio_path)
+    transcribed_text = result["text"]
+    st.success("✅ Transcription Complete!")
+    st.text_area("Transcribed Text", transcribed_text, height=200)
+
+    # Translate Text
+    def translate_to_english(text):
+        translator = Translator()
+        detected_lang = translator.detect(text).lang
+        if detected_lang in ["ur", "pa"]:
+            translation = translator.translate(text, src=detected_lang, dest="en")
+            return translation.text
         return text
 
-# Example usage
+    translated_text = translate_to_english(transcribed_text)
+    st.subheader("🔠 Translated Text")
+    st.write(translated_text)
 
-result["text"]=translate_to_english(result["text"])
-import spacy
-import dateparser
+    # Extract Date & Events
+    def extract_date_time_and_event(sentence):
+        extracted_data = search_dates(sentence)
+        if extracted_data:
+            date_time = extracted_data[0][1]
+            event_text = sentence.replace(extracted_data[0][0], "").strip()
+        else:
+            date_time = None
+            event_text = sentence
+        return date_time, event_text
 
-# Load spaCy model
-nlp = spacy.load("en_core_web_sm")
-
-def split_into_sentences(text):
-    """ Splits text into sentences with improved segmentation rules """
-    doc = nlp(text)
-    sentences = []
-    temp_sentence = []
-
-    for token in doc:
-        temp_sentence.append(token.text)
-        # Split sentence if punctuation (".", "?", "!") or conjunctions like "and" are found
-        if token.text in [".", "?", "!"] or token.dep_ == "cc":
-            sentences.append(" ".join(temp_sentence).strip())
-            temp_sentence = []
-
-    if temp_sentence:
-        sentences.append(" ".join(temp_sentence).strip())  # Add the last sentence
-
-    return sentences
-
-from dateparser.search import search_dates  # ✅ Correct import
-
-def extract_date_time_and_event(sentence):
-    """Extracts date and time separately from a sentence"""
-    extracted_data = search_dates(sentence)  # ✅ Correct usage
-    if extracted_data:
-        date_time = extracted_data[0][1]  # Extract the datetime object
-        event_text = sentence.replace(extracted_data[0][0], "").strip()
-    else:
-        date_time = None
-        event_text = sentence
-    return date_time, event_text
-def process_text(text):
-    """ Processes text by splitting sentences and extracting date/time """
-    sentences = split_into_sentences(text)
-    results = []
-
-    for sentence in sentences:
+    extracted_dates = []
+    for sentence in translated_text.split("."):
         date_time, event_text = extract_date_time_and_event(sentence)
-        results.append({
-            "sentence": sentence,
-            "date_time": date_time,
-            "event_text": event_text
-        })
+        if date_time:
+            extracted_dates.append({"date_time": date_time, "event_text": event_text})
 
-    return results
-
-# ✅ Process the text correctly
-results = process_text(result["text"])
-
-# ✅ Print the results
-for result1 in results:
-    print("Sentence:", result1["sentence"])
-    print("Date/Time:", result1["date_time"])
-    print("Event Text:", result1["event_text"])
-    print("-" * 40)
-
-
+    st.subheader("📅 Extracted Dates & Events")
+    if extracted_dates:
+        for item in extracted_dates:
+            st.write(f"🗓️ **Date/Time:** {item['date_time']} | 📌 **Event:** {item['event_text']}")
+    else:
+        st.warning("⚠️ No dates found in the text.")
