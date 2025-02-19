@@ -1,7 +1,6 @@
-git+https://github.com/openai/whisper.git
-
+openai-whisper
 streamlit
-googletrans==4.0.0rc1
+googletrans==4.0.0-rc1
 spacy==3.8.4
 dateparser==1.2.1
 torch==2.6.0
@@ -19,6 +18,3 @@ langdetect==1.0.9
 transformers==4.38.2
 tiktoken==0.8.0
 ffmpeg-python==0.2.0
-
-# spaCy language model
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
