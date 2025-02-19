@@ -50,22 +50,20 @@ if uploaded_file is not None:
     st.subheader("🔠 Translated Text")
     st.write(translated_text)
 
-    # Extract Date & Events
-    def extract_date_time_and_event(sentence):
-        extracted_data = search_dates(sentence)
+    # Extract Multiple Dates & Events
+    def extract_dates_and_events(text):
+        extracted_data = search_dates(text)  # Returns a list of (text, datetime) tuples
+        events = []
+        
         if extracted_data:
-            date_time = extracted_data[0][1]
-            event_text = sentence.replace(extracted_data[0][0], "").strip()
-        else:
-            date_time = None
-            event_text = sentence
-        return date_time, event_text
+            for date_text, date_time in extracted_data:
+                # Remove the date from the original text to get event description
+                event_text = text.replace(date_text, "").strip()
+                events.append({"date_time": date_time, "event_text": event_text})
+        
+        return events
 
-    extracted_dates = []
-    for sentence in translated_text.split("."):
-        date_time, event_text = extract_date_time_and_event(sentence)
-        if date_time:
-            extracted_dates.append({"date_time": date_time, "event_text": event_text})
+    extracted_dates = extract_dates_and_events(translated_text)
 
     st.subheader("📅 Extracted Dates & Events")
     if extracted_dates:
