@@ -5,7 +5,7 @@ model = whisper.load_model("base")
 print("Model loaded successfully!")
 
 # Transcribe an audio file using raw string notation
-result = model.transcribe(r"C:\Users\mohib\Downloads\WhatsApp Audio 2025-02-14 at 16.42.31_8f156670.waptt.mp3")
+result = model.transcribe(r"WhatsApp Audio 2025-02-14 at 16.42.31_8f156670.waptt.mp3")
 print("Transcription:", result["text"])
 from googletrans import Translator
 
